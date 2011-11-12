@@ -22,7 +22,7 @@ def table(t):
 
 
 def const(c):
-    '''A constant SQL value.'''
+    '''A constant SQL value. Escaped by the database engine.'''
     return Const(c)
 
 
@@ -32,6 +32,7 @@ def label(l):
 
 
 def raw_expr(expr):
+    '''A raw SQL expression.'''
     return RawExpression(expr)
 
 

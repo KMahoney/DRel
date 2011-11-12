@@ -1,3 +1,27 @@
+'''
+The classes in this file are nodes of a tree that represent an SQL
+query. Each node should be both stateless and immutable -- that is,
+methods should return a new AST instead of modifying an existing
+one. This means expressions can be reused and composed in a similar
+fashion to Django querysets.
+
+The SQL statement is compiled by the various `_compile`
+methods. Different `_compile` methods are used for different contexts
+to help make sure nonsense SQL queries are not generated. We can
+probably give more informative error messages in this way than the
+database can.
+
+A `Compiler` object is passed through the `_compile` methods to keep
+track of any state. Currently escaped values are appended to a list
+which means the nodes have to be compiled in the order they appear in
+the SQL query (so the order of the '%s' values match up). Consider a
+more elegant solution to be on the TODO list.
+
+The `Compiler` object is also responsible for keeping track of table
+aliasing, making sure they get unique names. This allows self joins,
+for example.
+
+'''
 from collections import namedtuple
 
 from django.db import connections
@@ -10,6 +34,8 @@ class InvalidQuery(Exception):
 
 
 class AST(object):
+    '''Base class for AST nodes.'''
+
     # Stub the various _compile interfaces with more useful error
     # messages.
 
@@ -156,6 +182,8 @@ class BinaryExpression(AST, ExpressionMixin):
 
 
 class Const(AST, ExpressionMixin):
+    '''A value to be escaped by the database engine.'''
+
     def __init__(self, value, alias=None):
         self._value = value
 
@@ -168,6 +196,8 @@ class Const(AST, ExpressionMixin):
 
 
 class RawExpression(AST, ExpressionMixin):
+    '''Pass through a string directly to the compiled SQL.'''
+
     def __init__(self, sql):
         self._sql = sql
 
@@ -186,6 +216,8 @@ class LabelReference(AST, ExpressionMixin):
 
 
 class FunctionExpression(AST, ExpressionMixin):
+    '''SQL function application.'''
+
     def __init__(self, fn, *args):
         self._fn = fn
         self._args = args

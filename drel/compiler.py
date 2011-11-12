@@ -10,9 +10,15 @@ class Compiler(object):
         self._connection = connection
 
     def q(self, s):
+        '''Quote a name.'''
         return self._connection.ops.quote_name(s)
 
     def refer(self, obj):
+        '''
+        Return the quoted name of an object, creating a new name if it
+        hasn't been referred to before.
+
+        '''
         try:
             return self._aliases[obj]
         except KeyError:
