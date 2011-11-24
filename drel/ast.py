@@ -75,6 +75,10 @@ class ExpressionMixin(object):
     def is_null(self):
         return BinaryExpression("IS", self, RawExpression("NULL"))
 
+    @property
+    def is_not_null(self):
+        return BinaryExpression("IS NOT", self, RawExpression("NULL"))
+
     def __eq__(self, other):
         return BinaryExpression("=", self, other)
 
