@@ -290,7 +290,7 @@ class Select(AST, ExpressionMixin):
     def leftjoin(self, table, on):
         return self._add_join(Join(table, on, "LEFT"))
 
-    def crossjoin(self, table, on):
+    def crossjoin(self, table):
         return self._add_join(CrossJoin(table))
 
     def where(self, expr):
