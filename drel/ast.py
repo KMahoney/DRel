@@ -342,7 +342,11 @@ class Select(AST, ExpressionMixin):
     def _sql(self, using='default'):
         con = connections[using]
         compiler = Compiler(con)
-        return self._compile(compiler)
+        return (self._compile(compiler), tuple(compiler.values))
+
+    def to_model(self, model, using='default'):
+        sql, values = self._sql(using)
+        return model.objects.raw(sql, values)
 
     def all(self, using='default'):
         '''Execute select and return all rows.'''
