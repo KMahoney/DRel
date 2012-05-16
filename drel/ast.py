@@ -140,6 +140,12 @@ class TableMixin(object):
     def order(self, *fields):
         return Select(self, order=fields)
 
+    def limit(self, limit):
+        return Select(self, limit=limit)
+
+    def offset(self, offset):
+        return Select(self, offset=offset)
+
 
 class DescendingExpression(AST):
     '''
@@ -273,13 +279,16 @@ class Select(AST, ExpressionMixin):
     '''Representation of a SELECT SQL statement.'''
 
     def __init__(self, source, project=None, joins=None,
-                 where=None, group=None, order=None):
+                 where=None, group=None, order=None,
+                 limit=None, offset=None):
         self._source = source
         self._project = project or []
         self._joins = joins or []
         self._where = where
         self._group = group
         self._order = order
+        self._limit = limit
+        self._offset = offset
 
     def project(self, *fields):
         return self._modified(_project=fields)
@@ -305,6 +314,12 @@ class Select(AST, ExpressionMixin):
     def order(self, *fields):
         return self._modified(_order=fields)
 
+    def limit(self, limit):
+        return self._modified(_limit=limit)
+
+    def offset(self, offset):
+        return self._modified(_offset=offset)
+
     @property
     def subquery(self):
         return SubQuery(self)
@@ -317,7 +332,9 @@ class Select(AST, ExpressionMixin):
             self._joins,
             self._where,
             self._group,
-            self._order)
+            self._order,
+            self._limit,
+            self._offset)
 
     def _modified(self, **kwargs):
         c = self._clone()
@@ -387,6 +404,12 @@ class Select(AST, ExpressionMixin):
                 f._compile_expression(compiler) for f in self._order)
             sql.append("ORDER BY")
             sql.append(order_sql)
+
+        if self._limit is not None:
+            sql.append("LIMIT %d" % self._limit)
+
+        if self._offset is not None:
+            sql.append("OFFSET %d" % self._offset)
 
         return " ".join(sql)
 

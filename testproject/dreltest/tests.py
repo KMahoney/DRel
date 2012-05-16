@@ -186,3 +186,14 @@ class DrelTest(TestCase):
         self.assertEqual(2, len(l))
         self.assertEqual(5, l[0].c)
         self.assertEqual(6, l[1].c)
+
+    def test_limit(self):
+        t2 = d.table(TestModel2)
+        self.assertEqual(1, len(list(t2.project(t2.c).limit(1).all())))
+        self.assertEqual(2, len(list(t2.project(t2.c).limit(2).all())))
+
+    def test_offset(self):
+        t2 = d.table(TestModel2)
+        test2 = list(t2.order(t2.c).limit(1).offset(1).project(t2.c).all())
+        self.assertEqual(1, len(test2))
+        self.assertEqual(2, test2[0].c)
